@@ -1,0 +1,27 @@
+@import 'styles/variables';
+
+.button {
+  border: 2px solid $border-color;
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.5rem;
+
+  &:hover,
+  &:active {
+    cursor: pointer;
+  }
+
+  &:disabled {
+    color: black;
+    cursor: not-allowed;
+    opacity: 0.65;
+  }
+
+  &--danger {
+    background-color: $color-danger;
+  }
+
+  &--success {
+    background-color: $color-success;
+  }
+}
