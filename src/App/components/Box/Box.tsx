@@ -1,4 +1,4 @@
-import { pipe } from 'fp-ts/lib/function'
+import { pipe } from 'fp-ts/function'
 import { className as cn, fromNullableProp } from 'lib/Styles'
 import React from 'react'
 import './Box.scss'
