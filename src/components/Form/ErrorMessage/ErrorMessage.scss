@@ -1,0 +1,14 @@
+.error-message {
+  margin-top: 0.5rem;
+
+  &__icon {
+    height: 20px;
+    margin-right: 0.5rem;
+    width: 20px;
+  }
+
+  &__text {
+    font-size: 0.85rem;
+    font-weight: bold;
+  }
+}

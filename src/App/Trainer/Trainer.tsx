@@ -1,19 +1,26 @@
-import { Card, CardBody, CardHeader } from 'App/components'
+import { Card, CardBody, CardHeader } from 'components/Card'
+import { Textarea } from 'components/Form'
 import * as A from 'fp-ts/Array'
 import { eqNumber } from 'fp-ts/Eq'
-import { constFalse, pipe } from 'fp-ts/function'
+import { constFalse, constNull, pipe } from 'fp-ts/function'
+import * as IO from 'fp-ts/IO'
 import * as O from 'fp-ts/Option'
+import * as R from 'fp-ts/Random'
+import { getTextFromFile, textMaxIndex } from 'lib/Text'
 import * as S from 'lib/String'
 import { className } from 'lib/Styles'
 import React from 'react'
 import { Stats } from './Stats'
 import './Trainer.scss'
 
-type TrainerProps = {
-  text: string
+const eqOptionNumber = O.getEq(eqNumber)
+
+type TrainerComponentProps = {
+  onAnotherText: () => void
+  text: S.NonEmptyString
 }
 
-export const Trainer: React.FC<TrainerProps> = ({ text }) => {
+const TrainerComponent: React.FC<TrainerComponentProps> = ({ onAnotherText, text }) => {
   const [currentErrorIndex, setCurrentErrorIndex] = React.useState<O.Option<number>>(O.none)
   const [errorIndexes, setErrorIndexes] = React.useState<Array<number>>(A.empty)
   const [startedTyping, setStartedTyping] = React.useState<O.Option<Date>>(O.none)
@@ -59,21 +66,21 @@ export const Trainer: React.FC<TrainerProps> = ({ text }) => {
       A.findIndex(([a, b]) => a !== b),
     )
 
-    if (!O.getEq(eqNumber).equals(errorIndex, currentErrorIndex)) {
+    if (!eqOptionNumber.equals(errorIndex, currentErrorIndex)) {
       setCurrentErrorIndex(errorIndex)
     }
   }
 
   const handlePaste = (event: React.SyntheticEvent): void => event.preventDefault()
 
-  const handleReset = (): void => {
+  const onReset = (): void => {
     setCurrentErrorIndex(O.none)
     setErrorIndexes(A.empty)
     setStartedTyping(O.none)
     setValue(S.empty)
   }
 
-  const finishedTyping = text === value.trimRight()
+  const finishedTyping = S.fromCharArray(chars) === value.trimRight()
 
   const processedText = pipe(
     chars,
@@ -106,26 +113,25 @@ export const Trainer: React.FC<TrainerProps> = ({ text }) => {
   )
 
   return (
-    <Card styling='grey' className='trainer'>
+    <Card className='trainer mt-4'>
       <CardHeader>
         <Stats
           errorsCount={errorIndexes.length}
           finishedTyping={finishedTyping}
-          handleReset={handleReset}
+          onAnotherText={onAnotherText}
+          onReset={onReset}
           startedTyping={startedTyping}
           textTyped={value}
         />
       </CardHeader>
 
       <CardBody>
-        <div className='trainer__text mx-2'>{processedText}</div>
+        <div className='trainer__text mb-2'>{processedText}</div>
 
-        <textarea
-          className={className([
-            'trainer__input-field',
-            O.isSome(currentErrorIndex) ? 'trainer__input-field--invalid' : null,
-          ])}
+        <Textarea
+          className='trainer__input-field'
           disabled={finishedTyping}
+          invalid={O.isSome(currentErrorIndex)}
           onChange={handleChange}
           onPaste={handlePaste}
           placeholder='Start typing...'
@@ -134,5 +140,41 @@ export const Trainer: React.FC<TrainerProps> = ({ text }) => {
         />
       </CardBody>
     </Card>
+  )
+}
+
+const randomIndexOption: IO.IO<O.Option<number>> = pipe(R.randomInt(0, textMaxIndex), IO.map(O.of))
+
+const generateRandomIndex = (next: O.Option<number>) => (
+  current: O.Option<number>,
+): O.Option<number> =>
+  eqOptionNumber.equals(current, next) ? generateRandomIndex(randomIndexOption())(current) : next
+
+type TrainerProps = {
+  customText: O.Option<S.NonEmptyString>
+  resetCustomText: () => void
+}
+
+export const Trainer: React.FC<TrainerProps> = ({ customText, resetCustomText }) => {
+  const [textIndex, setTextIndex] = React.useState<O.Option<number>>(O.none)
+
+  const generateIndex = (): void => {
+    setTextIndex(generateRandomIndex(randomIndexOption()))
+  }
+
+  const handleAnotherText = (): void => {
+    if (O.isSome(customText)) {
+      resetCustomText()
+    }
+
+    generateIndex()
+  }
+
+  React.useEffect(generateIndex, [])
+
+  return pipe(
+    customText,
+    O.alt(() => pipe(textIndex, O.chain(getTextFromFile))),
+    O.fold(constNull, text => <TrainerComponent onAnotherText={handleAnotherText} text={text} />),
   )
 }

@@ -1,0 +1,9 @@
+@import 'styles/variables';
+
+.stats {
+  &__done {
+    color: $yellow-accent-2;
+    font-weight: bold;
+    text-decoration: underline;
+  }
+}

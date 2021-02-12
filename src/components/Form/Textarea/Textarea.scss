@@ -1,0 +1,18 @@
+@import 'styles/variables';
+
+.textarea {
+  border: 2px solid $border-color;
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.5rem;
+  resize: vertical;
+  width: 100%;
+
+  &--valid:focus {
+    outline-color: $color-success;
+  }
+
+  &--invalid:focus {
+    outline-color: $color-danger;
+  }
+}

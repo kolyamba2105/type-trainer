@@ -1,10 +1,11 @@
-import { Box, Button } from 'App/components'
+import { Box, Button } from 'components'
 import { differenceInSeconds } from 'date-fns'
 import { addSeconds } from 'date-fns/fp'
 import { flow, pipe, tupled } from 'fp-ts/function'
 import { sequenceT } from 'fp-ts/Apply'
 import * as O from 'fp-ts/Option'
 import React from 'react'
+import './Stats.scss'
 
 const secondsToMinutes = (seconds: number): number => seconds / 60
 
@@ -14,7 +15,8 @@ const wordsPerMinute = (charsCount: number) => (timeSpent: number): number =>
 type StatsProps = {
   errorsCount: number
   finishedTyping: boolean
-  handleReset: () => void
+  onAnotherText: () => void
+  onReset: () => void
   startedTyping: O.Option<Date>
   textTyped: string
 }
@@ -22,7 +24,8 @@ type StatsProps = {
 export const Stats: React.FC<StatsProps> = ({
   errorsCount,
   finishedTyping,
-  handleReset,
+  onAnotherText,
+  onReset,
   startedTyping,
   textTyped,
 }) => {
@@ -55,27 +58,39 @@ export const Stats: React.FC<StatsProps> = ({
     O.fold(() => 0, flow(secondsToMinutes, wordsPerMinute(textTyped.length))),
   )
 
-  const handleClick = (): void => {
-    handleReset()
+  const handleReset = (): void => {
+    onReset()
     setSeconds(0)
   }
 
+  const handleAnotherText = (): void => {
+    handleReset()
+    onAnotherText()
+  }
+
   return (
-    <Box alignItems='center' justifyContent='space-between'>
+    <Box alignItems='center' className='stats' justifyContent='space-between'>
       <Box>
         <p className='mr-2'>Time spent: {seconds} s</p>
         <p className='mr-2'>Errors: {errorsCount}</p>
         <p className='mr-2'>Result: {result} wpm</p>
-        {finishedTyping ? <p>Done!</p> : null}
       </Box>
 
-      <Button
-        type='button'
-        disabled={O.isNone(startedTyping)}
-        onClick={handleClick}
-        styling='danger'>
-        Reset
-      </Button>
+      <Box alignItems='center'>
+        {finishedTyping ? <p className='stats__done mr-2'>Done!</p> : null}
+
+        <Button className='mr-2' type='button' onClick={handleAnotherText} styling='success'>
+          Another text
+        </Button>
+
+        <Button
+          type='button'
+          disabled={O.isNone(startedTyping)}
+          onClick={handleReset}
+          styling='danger'>
+          Restart
+        </Button>
+      </Box>
     </Box>
   )
 }

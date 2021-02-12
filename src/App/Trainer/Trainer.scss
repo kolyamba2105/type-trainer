@@ -19,21 +19,7 @@
   }
 
   &__input-field {
-    border: 2px solid $border-color;
-    font-family: inherit;
-    font-size: 1rem;
     min-height: 100px;
     max-height: 400px;
-    padding: 0.5rem;
-    resize: vertical;
-    width: 100%;
-
-    &:focus {
-      outline-color: $color-success;
-    }
-
-    &--invalid:focus {
-      outline-color: $color-danger;
-    }
   }
 }

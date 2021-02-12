@@ -4,6 +4,7 @@ $card-width: 800px;
 
 .card {
   align-items: center;
+  background-color: $teal;
   border: 2px solid $border-color;
   display: flex;
   flex-direction: column;
@@ -18,13 +19,6 @@ $card-width: 800px;
 
   &__body {
     padding: 1rem;
-  }
-
-  &--grey {
-    background-color: $blue-grey;
-  }
-
-  &--white {
-    background-color: $grey-lighten-4;
+    width: 100%;
   }
 }
